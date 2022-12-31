@@ -18,7 +18,9 @@ class KPExtractor:
         p_k = np.zeros((N_detected,1,2),dtype=np.float32)
 
         for i,kp in enumerate(kp1):            
+            
             pt1 = kp.pt
-            p_k[i,0,0],p_k[i,0,1] = pt1[0],pt1[1]
+            
+            self.Base.p_smp = [pt1[0],pt1[1],1]
 
         return p_k

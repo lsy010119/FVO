@@ -111,6 +111,7 @@ if __name__ == "__main__":
 
     th_kpext    = 30
     N           = 100
+    N_smp       = 500
 
     N_iter      = 50
     stop_crit   = 0.01
@@ -120,7 +121,7 @@ if __name__ == "__main__":
 
     params = Params(K,dist_coeff,size,\
                     frame_rate,\
-                    th_kpext,N,\
+                    th_kpext,N,N_smp,\
                     N_iter,stop_crit,\
                     topic_name)
 
