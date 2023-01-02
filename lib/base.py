@@ -12,7 +12,7 @@ from sensor_msgs.msg    import PointCloud
 
 class Keypoint:
 
-    def __init__(self, id=-1, coord2D=array([0,0,1]),coord3D=array([])):
+    def __init__(self, id=-1, coord2D=array([]),coord3D=array([])):
         
         self.id = id
         self.coord2D = coord2D
@@ -26,7 +26,7 @@ class Params:
 
     def __init__(self,K,dist_coeff,size,\
                       frame_rate,\
-                      th_kpext,N,N_smp,\
+                      th_kpext,N,\
                       N_iter,stop_crit,\
                       topic_name):
         
@@ -38,7 +38,6 @@ class Params:
 
         self.th_kpext = th_kpext
         self.N = N
-        self.N_smp = N_smp
 
         self.N_iter = N_iter
         self.stop_crit = stop_crit
@@ -78,16 +77,12 @@ class Base:
 
         self.N = params.N
 
-        self.N_smp = params.N_smp
-
         self.th_kpext = params.th_kpext
 
-        self.p_k_smp    = [Keypoint()]*params.N_smp
+        self.p_k_smp    = 0
 
-        self.p_k        = [Keypoint()]*params.N
-        self.p_c        = [Keypoint()]*params.N
-
-        self.p_bad      = []
+        self.p_k        = ones((self.N,3),          dtype=int)
+        self.p_c        = ones((self.N,3),          dtype=int)
 
         ''' Optimization '''
 
@@ -108,8 +103,13 @@ class Base:
 
         ''' Odometry '''
 
-        self.T_k1w      = zeros((4,4),              dtype=float)
-        self.T_k2k1     = zeros((4,4),              dtype=float)
+        self.T_k_w      = ones((4,4),              dtype=float)
+
+        self.T_c_k      = ones((4,4),              dtype=float)
+
+        self.T_c_w      = ones((4,4),              dtype=float)
+
+        self.T_c_w_odom = []
 
         ''' Flags '''
 
@@ -269,6 +269,4 @@ class Base:
                 except: pass
 
         return dst
-
-
 

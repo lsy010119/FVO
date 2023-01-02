@@ -1,8 +1,8 @@
-import numpy as np
 import time
 import cv2
 
-
+from numpy          import array,eye,zeros,diag,reciprocal
+from numpy.linalg   import norm, inv
 
 class PoseEstimator:
 
@@ -11,7 +11,7 @@ class PoseEstimator:
         self.Base = Base
 
         
-    def dFdq(self,K,R,q1,q2,P2):
+    def _dFdq(self,K,R,q1,q2,P2):
         """
         dp2/dP2
 
@@ -20,30 +20,30 @@ class PoseEstimator:
         
         """
         
-        dp2dP2 = - np.array([[q2*K[0,0],0,-(q2**2)*K[0,0]*P2[0]],
+        dp2dP2 = - array([[q2*K[0,0],0,-(q2**2)*K[0,0]*P2[0]],
                              [0,q2*K[1,1],-(q2**2)*K[1,1]*P2[1]]])
 
         dP2dP1 = R
 
-        dP1dq1 = np.array([0,0,-1/(q1**2)])
+        dP1dq1 = array([0,0,-1/(q1**2)])
 
         dFdq = dp2dP2@dP2dP1@dP1dq1
 
         return dFdq
 
 
-    def dFdt(self,K,q2,P1,P2):
+    def _dFdt(self,K,q2,P1,P2):
         """
         dP2dt
 
             [P]_x | I
         """
 
-        dp2dP2 = - np.array([[q2*K[0,0],0,-(q2**2)*K[0,0]*P2[0]],
+        dp2dP2 = - array([[q2*K[0,0],0,-(q2**2)*K[0,0]*P2[0]],
                              [0,q2*K[1,1],-(q2**2)*K[1,1]*P2[1]]])
 
 
-        dP2dt = np.array([[0,P1[2],-P1[1],1,0,0],
+        dP2dt = array([[0,P1[2],-P1[1],1,0,0],
                           [-P1[2],0,P1[0],0,1,0],
                           [P1[1],-P1[0],0,0,0,1]])
 
@@ -52,28 +52,28 @@ class PoseEstimator:
         return dFdt
 
 
-    def schur_comp(self,J,F,H,N):
+    def _schur_comp(self,J,F,H,N):
 
 
         H_qq = H[:-6,:-6]
         H_qt = H[:-6,-6:]
         H_tq = H[-6:,:-6]
         H_tt = H[-6:,-6:]
-        H_qq_inv = np.diag(np.reciprocal(np.diag(H_qq)))
+        H_qq_inv = diag(reciprocal(diag(H_qq)))
 
         b = J.T@F
         b_q = b[:-6]
         b_t = b[-6:]
 
-        del_x = np.zeros((N+6,1))
+        del_x = zeros((N+6,1))
 
-        del_x[-6:] = np.linalg.inv(-H_tq@H_qq_inv@H_qt + H_tt)@(b_t - H_tq@H_qq_inv@b_q)
+        del_x[-6:] = inv(-H_tq@H_qq_inv@H_qt + H_tt)@(b_t - H_tq@H_qq_inv@b_q)
         del_x[:-6] = H_qq_inv@(b_q - H_qt@del_x[-6:])
 
         return del_x
 
 
-    def cal_delx(self,p1,p2,x,lam):
+    def _cal_delx(self,p1,p2,x,lam):
 
         K           = self.Base.K
         N           = self.Base.N
@@ -83,8 +83,8 @@ class PoseEstimator:
         proj3D2D    = self.Base.proj3D2D
 
 
-        dFdq        = self.dFdq
-        dFdt        = self.dFdt
+        dFdq        = self._dFdq
+        dFdt        = self._dFdt
 
 
         self.Base.F_p = self.Base.F_c.copy()
@@ -121,10 +121,10 @@ class PoseEstimator:
 
         self.Base.H = self.Base.J.T@self.Base.J
 
-        # self.Base.H_mod = (self.Base.H + lam*np.diag(np.diag(self.Base.H)))
-        self.Base.H_mod = (self.Base.H + lam*np.eye(N+6))
+        # self.Base.H_mod = (self.Base.H + lam*diag(diag(self.Base.H)))
+        self.Base.H_mod = (self.Base.H + lam*eye(N+6))
 
-        del_x = - self.schur_comp(self.Base.J,self.Base.F_c,self.Base.H_mod,N)
+        del_x = - self._schur_comp(self.Base.J,self.Base.F_c,self.Base.H_mod,N)
 
         return del_x
 
@@ -136,7 +136,7 @@ class PoseEstimator:
         N_iter = self.Base.N_iter
 
 
-        del_x = self.cal_delx(p1,p2,x_p,lam)
+        del_x = self._cal_delx(p1,p2,x_p,lam)
 
         x_1 = x_p
         x_2 = x_1 + del_x[:,0]
@@ -144,10 +144,10 @@ class PoseEstimator:
 
         for _ in range(N_iter-1):
 
-            del_x = self.cal_delx(p1,p2,x_2,lam)
+            del_x = self._cal_delx(p1,p2,x_2,lam)
 
-            norm_F_1 = np.linalg.norm(self.Base.F_p)
-            norm_F_2 = np.linalg.norm(self.Base.F_c)
+            norm_F_1 = norm(self.Base.F_p)
+            norm_F_2 = norm(self.Base.F_c)
 
             if norm_F_2 < norm_F_1:
 

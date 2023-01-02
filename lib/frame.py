@@ -24,7 +24,10 @@ class Frame:
 
             img = np.frombuffer(msg.data, dtype=np.uint8).reshape(msg.height, msg.width, -1)
 
-            img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            try:
+                img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+            except: img_gray = img
 
             img_gray_undist = cv2.undistort(img_gray,self.K,self.dist_coeff)
 

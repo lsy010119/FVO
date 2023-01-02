@@ -27,3 +27,24 @@ class Visualizer:
 
         cv2.imshow("tracked",frame_curr_)
         cv2.waitKey(1)
+
+
+    def viz_pose(self):
+
+        # fig = plt.figure()
+        # world = fig.add_subplot(1,1,1,projection="3d")
+
+        for T in self.Base.T_c_w_odom:
+
+            loc = (T@np.array([[0],[0],[0],[1]]))[:3]
+
+            pose_x = (T[:3,:3]@np.array([[1],[0],[0]]))[:3]
+            pose_y = (T[:3,:3]@np.array([[0],[1],[0]]))[:3]
+            pose_z = (T[:3,:3]@np.array([[0],[0],[1]]))[:3]
+
+        # world.scatter(loc[0],loc[1],loc[2],marker='*',c="red",s=15)
+        # world.quiver(loc[0],loc[1],loc[2],pose_x[0],pose_x[1],pose_x[2],length=1, normalize=True, color="red")
+        # world.quiver(loc[0],loc[1],loc[2],pose_y[0],pose_y[1],pose_y[2],length=1, normalize=True, color="green")
+        # world.quiver(loc[0],loc[1],loc[2],pose_z[0],pose_z[1],pose_z[2],length=1, normalize=True, color="blue")
+
+
