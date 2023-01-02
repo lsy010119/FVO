@@ -103,8 +103,13 @@ class Base:
 
         ''' Odometry '''
 
-        self.T_k1w      = zeros((4,4),              dtype=float)
-        self.T_k2k1     = zeros((4,4),              dtype=float)
+        self.T_k_w      = ones((4,4),              dtype=float)
+
+        self.T_c_k      = ones((4,4),              dtype=float)
+
+        self.T_c_w      = ones((4,4),              dtype=float)
+
+        self.T_c_w_odom = []
 
         ''' Flags '''
 

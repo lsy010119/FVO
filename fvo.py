@@ -3,13 +3,14 @@ import time
 
 from numpy import array
 
-from lib.base import Base,Params
-from lib.frame import Frame
-from lib.init_pose_estimator import InitPoseEstimator
-from lib.pose_estimator import PoseEstimator
-from lib.keypoint_extractor import KPExtractor
-from lib.keypoint_tracker import KPTracker
-from lib.viz import Visualizer
+from lib.base                   import Base,Params
+from lib.frame                  import Frame
+from lib.init_pose_estimator    import InitPoseEstimator
+from lib.pose_estimator         import PoseEstimator
+from lib.pose_updater           import PoseUpdater
+from lib.keypoint_extractor     import KPExtractor
+from lib.keypoint_tracker       import KPTracker
+from lib.viz                    import Visualizer
 
 class FVO:
 
@@ -23,6 +24,7 @@ class FVO:
         frame           = Frame(self.Base)
         estimator_init  = InitPoseEstimator(self.Base)
         estimator       = PoseEstimator(self.Base)
+        updater         = PoseUpdater(self.Base)
         kpdetector      = KPExtractor(self.Base)
         kptracker       = KPTracker(self.Base)
         viz             = Visualizer(self.Base)
@@ -43,13 +45,15 @@ class FVO:
             frame_key,frame_curr = self.Base.frame_key,self.Base.frame_curr
 
 
-            if self.Base.is_keyframe or self.Base.frame_counter == 5:
+            if self.Base.is_keyframe or self.Base.frame_counter == 10:
 
                 self.Base.is_initialized = False
                 self.Base.is_keyframe = False
                 self.Base.frame_counter = 0
 
                 self.Base.frame_key = frame_curr
+
+                self.Base.T_k_w = self.Base.T_c_w
 
                 self.Base.p_k_smp = kpdetector.detect(frame_key)
 
@@ -86,9 +90,11 @@ class FVO:
 
             self.Base.x_c = estimator.estimate(p_k,p_c,self.Base.x_p)
 
-            viz.viz_img(frame_key, frame_curr)
+            # viz.viz_img(frame_key, frame_curr)
+            
+            updater.update(self.Base.x_c)
 
-            print(self.Base.x_c[-6:])
+            # print(self.Base.x_c[-6:])
 
             self.Base.frame_counter += 1
 
