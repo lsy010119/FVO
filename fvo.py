@@ -45,6 +45,7 @@ class FVO:
 
             if self.Base.is_keyframe or self.Base.frame_counter == 5:
 
+                self.Base.is_initialized = False
                 self.Base.is_keyframe = False
                 self.Base.frame_counter = 0
 
@@ -53,7 +54,6 @@ class FVO:
                 self.Base.p_k_smp = kpdetector.detect(frame_key)
 
                 continue
-
 
 
             if not kptracker.track(frame_key, frame_curr, self.Base.p_k_smp):
@@ -100,12 +100,30 @@ class FVO:
 
 if __name__ == "__main__":
 
-    K           = array([[503.791596,0.000000  ,306.540655],
-                         [0.000000  ,504.248568,240.243212],
-                         [0.000000  ,0.000000  ,1.000000  ]])
+    # K           = array([[503.791596,0.000000  ,306.540655],
+    #                      [0.000000  ,504.248568,240.243212],
+    #                      [0.000000  ,0.000000  ,1.000000  ]])
 
-    dist_coeff  = array([0.077789, -0.156478, -0.000164, 0.001416, 0.000000])
-    size        = (480,640)
+    # dist_coeff  = array([0.077789, -0.156478, -0.000164, 0.001416, 0.000000])
+    # size        = (480,640)
+
+    # frame_rate  = 60
+
+    # th_kpext    = 30
+    # N           = 100
+
+    # N_iter      = 50
+    # stop_crit   = 0.01
+
+    # topic_name  = "/usb_cam/image_raw"
+
+
+    K           = array([[347.344668, 0.00000000, 317.843671],
+                         [0.00000000, 346.900900, 255.698665],
+                         [0.00000000, 0.00000000, 1.00000000]])
+
+    dist_coeff  = array([-0.279997, 0.058631, 0.002795, -0.000103, 0.000000])
+    size        = (512,640)
 
     frame_rate  = 60
 
@@ -115,8 +133,7 @@ if __name__ == "__main__":
     N_iter      = 50
     stop_crit   = 0.01
 
-    topic_name  = "/usb_cam/image_raw"
-
+    topic_name  = "/camera_up/image_raw"
 
     params = Params(K,dist_coeff,size,\
                     frame_rate,\
